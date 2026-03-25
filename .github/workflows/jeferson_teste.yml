@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - "**"  # Dispara em qualquer commit feito em qualquer branch
+      - "**"
 
 jobs:
   build:
@@ -19,8 +19,13 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      # Garante que o script tenha permissão de execução no Linux
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      # Adicionamos a flag para definir o diretório explicitamente
       - name: Build
-        run: ./mvnw package -DskipTests
+        run: ./mvnw package -DskipTests -Dmaven.multiModuleProjectDirectory=$GITHUB_WORKSPACE
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -48,11 +53,15 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: app-jar
           path: target/
 
+      # Roda os testes garantindo que o Maven encontre o diretório
       - name: Test
-        run: ./mvnw test
+        run: ./mvnw test -Dmaven.multiModuleProjectDirectory=$GITHUB_WORKSPACE
